@@ -1,6 +1,8 @@
 import type { ModuleMeta } from './types'
 
 // 模块元数据由仓库生成时写入：字段、状态、动作、流转目标都在这里，页面不再各自写一遍。
+// doneStatuses：进入这些状态即离开待办；abnormalStatuses：计入异常量的状态。
+// reviewable：走统一复核流（复核详情 + 核对清单 + 整编待办），清单条目由 checklist 驱动。
 export const MODULES: ModuleMeta[] = [
   {
     key: "station",
@@ -12,6 +14,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["升级为加强", "登记故障", "撤销站点"],
     actionTargets: {"升级为加强": "汛期加强", "登记故障": "设备故障", "撤销站点": "已撤销"},
     metrics: ["站点总数", "正常运行数", "故障站点数"],
+    doneStatuses: ["正常运行", "汛期加强", "已撤销"],
+    abnormalStatuses: ["设备故障", "暂停运行"],
   },
   {
     key: "waterlevel",
@@ -23,6 +27,20 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
     metrics: ["今日采集数", "超警戒站次", "待审核记录"],
+    doneStatuses: ["已通过", "异常值"],
+    abnormalStatuses: ["异常值"],
+    reviewable: true,
+    compilationSource: true,
+    reviewFocusFields: ["观测时间", "当前水位", "警戒水位", "保证水位", "水位变幅", "观测人"],
+    reviewConclusions: ["复核通过", "复核异常"],
+    abnormalConclusions: ["复核异常"],
+    checklist: [
+      { id: "time", label: "观测时间完整，测次频次符合规范" },
+      { id: "level", label: "水位读数与水尺零点高程核算一致" },
+      { id: "warning", label: "超警戒、保证水位标注正确" },
+      { id: "range", label: "水位变幅与相邻测次衔接合理" },
+      { id: "observer", label: "观测人、原始记载信息齐全" },
+    ],
   },
   {
     key: "discharge",
@@ -34,6 +52,20 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
     metrics: ["今日测量次数", "待审核记录", "异常记录数"],
+    doneStatuses: ["已通过", "异常值"],
+    abnormalStatuses: ["异常值"],
+    reviewable: true,
+    compilationSource: true,
+    reviewFocusFields: ["测量方法", "断面流量", "最大流速", "过水面积", "测量时间"],
+    reviewConclusions: ["复核通过", "复核异常"],
+    abnormalConclusions: ["复核异常"],
+    checklist: [
+      { id: "method", label: "测量方法选用符合测站条件与规范" },
+      { id: "area", label: "过水面积与断面测量成果一致" },
+      { id: "velocity", label: "最大流速、测点流速测算无误" },
+      { id: "flow", label: "断面流量与流速面积法分项合计相符" },
+      { id: "record", label: "测量时间、原始记载信息齐全" },
+    ],
   },
   {
     key: "rainfall",
@@ -45,6 +77,20 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
     metrics: ["今日观测站次", "暴雨站点数", "待审核记录"],
+    doneStatuses: ["已通过", "异常值"],
+    abnormalStatuses: ["异常值"],
+    reviewable: true,
+    compilationSource: true,
+    reviewFocusFields: ["观测时段", "时段雨量", "日累计雨量", "降雨强度", "观测人"],
+    reviewConclusions: ["复核通过", "复核异常"],
+    abnormalConclusions: ["复核异常"],
+    checklist: [
+      { id: "period", label: "观测时段起止完整，无跨日错填" },
+      { id: "interval", label: "时段雨量与翻斗/雨量器原始记载口径一致" },
+      { id: "daily", label: "日累计雨量等于当日各时段雨量合计" },
+      { id: "intensity", label: "降雨强度与时段雨量、降雨历时匹配" },
+      { id: "observer", label: "观测人、观测时间等原始记载齐全" },
+    ],
   },
   {
     key: "waterquality",
@@ -56,6 +102,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["开始检测", "出具报告", "发起复核"],
     actionTargets: {"开始检测": "检测中", "出具报告": "已出报告", "发起复核": "已复核"},
     metrics: ["本月检测次数", "超标报告数", "检测中样本"],
+    doneStatuses: ["已出报告", "已复核"],
+    abnormalStatuses: ["超标"],
   },
   {
     key: "crosssection",
@@ -67,6 +115,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交校核", "确认校核", "安排重测"],
     actionTargets: {"提交校核": "待校核", "确认校核": "已校核", "安排重测": "需重测"},
     metrics: ["本月测量次数", "待校核记录", "需重测记录"],
+    doneStatuses: ["已校核"],
+    abnormalStatuses: ["需重测"],
   },
   {
     key: "telemetry",
@@ -78,6 +128,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["报修设备", "确认修复", "停用设备"],
     actionTargets: {"报修设备": "待维修", "确认修复": "正常运行", "停用设备": "已停用"},
     metrics: ["设备总数", "正常运行数", "待维修数"],
+    doneStatuses: ["正常运行", "已停用"],
+    abnormalStatuses: ["信号异常", "低电量", "待维修"],
   },
   {
     key: "compilation",
@@ -89,6 +141,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["开始整编", "提交审核", "驳回整编"],
     actionTargets: {"开始整编": "整编中", "提交审核": "待审核", "驳回整编": "已驳回"},
     metrics: ["待整编年度", "整编中年度", "已刊印成果"],
+    doneStatuses: ["已刊印"],
+    abnormalStatuses: ["已驳回"],
   },
   {
     key: "warning",
@@ -100,6 +154,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["发布生效", "调整阈值", "停用配置"],
     actionTargets: {"发布生效": "已生效", "调整阈值": "已调整", "停用配置": "已停用"},
     metrics: ["配置总数", "已生效数", "本月调整数"],
+    doneStatuses: ["已生效", "已调整", "已停用"],
+    abnormalStatuses: [],
   },
   {
     key: "groundwater",
@@ -111,6 +167,20 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
     metrics: ["今日观测井次", "待审核记录", "异常记录数"],
+    doneStatuses: ["已通过", "异常值"],
+    abnormalStatuses: ["异常值"],
+    reviewable: true,
+    compilationSource: true,
+    reviewFocusFields: ["观测日期", "埋深值", "水位标高", "水温", "观测人"],
+    reviewConclusions: ["复核通过", "复核异常"],
+    abnormalConclusions: ["复核异常"],
+    checklist: [
+      { id: "date", label: "观测日期完整，测次频次符合规范" },
+      { id: "depth", label: "埋深值与井口固定点高程换算一致" },
+      { id: "level", label: "水位标高等于井口高程减去埋深" },
+      { id: "temp", label: "水温等配套观测项目记录完整" },
+      { id: "observer", label: "观测人、原始记载信息齐全" },
+    ],
   },
   {
     key: "evaporation",
@@ -122,6 +192,20 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
     metrics: ["今日观测站次", "待审核记录", "异常记录数"],
+    doneStatuses: ["已通过", "异常值"],
+    abnormalStatuses: ["异常值"],
+    reviewable: true,
+    compilationSource: true,
+    reviewFocusFields: ["观测日期", "蒸发量", "水温", "气温", "风速"],
+    reviewConclusions: ["复核通过", "复核异常"],
+    abnormalConclusions: ["复核异常"],
+    checklist: [
+      { id: "date", label: "观测日期完整，测次频次符合规范" },
+      { id: "amount", label: "蒸发量为相邻测次筒内水深差值，符号正确" },
+      { id: "rainfall", label: "降雨日蒸发量已按规范扣除降水量影响" },
+      { id: "weather", label: "水温、气温、风速等气象要素齐全" },
+      { id: "observer", label: "观测人、原始记载信息齐全" },
+    ],
   },
   {
     key: "cableway",
@@ -133,6 +217,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["安排检修", "完成检修", "停用缆道"],
     actionTargets: {"安排检修": "需检修", "完成检修": "正常运行", "停用缆道": "已停用"},
     metrics: ["缆道总数", "正常运行数", "需检修数"],
+    doneStatuses: ["正常运行", "已停用"],
+    abnormalStatuses: ["需检修"],
   },
   {
     key: "sediment",
@@ -144,6 +230,20 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审核", "确认通过", "标记异常"],
     actionTargets: {"提交审核": "待审核", "确认通过": "已通过", "标记异常": "异常值"},
     metrics: ["本月采样次数", "待审核记录", "异常记录数"],
+    doneStatuses: ["已通过", "异常值"],
+    abnormalStatuses: ["异常值"],
+    reviewable: true,
+    compilationSource: true,
+    reviewFocusFields: ["采样时间", "含沙量", "输沙率", "颗粒级配", "采样人"],
+    reviewConclusions: ["复核通过", "复核异常"],
+    abnormalConclusions: ["复核异常"],
+    checklist: [
+      { id: "time", label: "采样时间与相应流量测次对应" },
+      { id: "concentration", label: "含沙量计算、单位换算正确" },
+      { id: "rate", label: "输沙率与断面流量、含沙量匹配" },
+      { id: "gradation", label: "颗粒级配分析成果完整" },
+      { id: "sampler", label: "采样人、采样方法等原始记载齐全" },
+    ],
   },
   {
     key: "communication",
@@ -155,6 +255,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["登记故障", "确认恢复", "申请更换"],
     actionTargets: {"登记故障": "通讯中断", "确认恢复": "通讯正常", "申请更换": "待更换"},
     metrics: ["设备总数", "通讯正常数", "中断设备数"],
+    doneStatuses: ["通讯正常"],
+    abnormalStatuses: ["信号弱", "通讯中断", "待更换"],
   },
   {
     key: "stationhouse",
@@ -166,6 +268,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["安排维护", "确认完工", "通过验收"],
     actionTargets: {"安排维护": "已安排", "确认完工": "已完成", "通过验收": "已验收"},
     metrics: ["待维护项数", "施工中项数", "本月已验收"],
+    doneStatuses: ["已验收"],
+    abnormalStatuses: [],
   },
   {
     key: "calibration",
@@ -177,6 +281,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["送出检定", "确认合格", "标记不合格"],
     actionTargets: {"送出检定": "送检中", "确认合格": "已合格", "标记不合格": "不合格"},
     metrics: ["待送检仪器", "已合格仪器", "不合格仪器"],
+    doneStatuses: ["已合格", "已停用"],
+    abnormalStatuses: ["不合格"],
   },
   {
     key: "inspection",
@@ -188,6 +294,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["完成巡检", "报告故障", "确认处置"],
     actionTargets: {"完成巡检": "已巡检", "报告故障": "发现故障", "确认处置": "已处置"},
     metrics: ["本月巡检次数", "已巡检站点", "待处置故障"],
+    doneStatuses: ["已巡检", "已处置"],
+    abnormalStatuses: ["发现故障"],
   },
   {
     key: "plan",
@@ -199,6 +307,8 @@ export const MODULES: ModuleMeta[] = [
     actions: ["提交审批", "批准方案", "废止方案"],
     actionTargets: {"提交审批": "待审批", "批准方案": "已批准", "废止方案": "已废止"},
     metrics: ["方案总数", "已批准方案", "待审批方案"],
+    doneStatuses: ["已批准", "已修订", "已废止"],
+    abnormalStatuses: [],
   },
 ]
 

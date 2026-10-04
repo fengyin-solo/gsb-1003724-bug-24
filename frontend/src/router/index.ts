@@ -19,6 +19,17 @@ const Stationhouse = () => import('@/views/stationhouse/index.vue')
 const Calibration = () => import('@/views/calibration/index.vue')
 const Inspection = () => import('@/views/inspection/index.vue')
 const Plan = () => import('@/views/plan/index.vue')
+const ReviewDetail = () => import('@/views/shared/ReviewDetailPage.vue')
+
+// 走统一复核流的整编来源模块：复核详情路由对它们统一开放。
+const REVIEWABLE_MODULES = [
+  'waterlevel',
+  'discharge',
+  'rainfall',
+  'groundwater',
+  'evaporation',
+  'sediment',
+]
 
 const router = createRouter({
   history: createWebHistory(),
@@ -42,6 +53,13 @@ const router = createRouter({
     { path: '/calibration', name: 'calibration', component: Calibration },
     { path: '/inspection', name: 'inspection', component: Inspection },
     { path: '/plan', name: 'plan', component: Plan },
+    {
+      path: '/review/:moduleKey/:id(\\d+)',
+      name: 'review-detail',
+      component: ReviewDetail,
+      beforeEnter: (to) =>
+        REVIEWABLE_MODULES.includes(String(to.params.moduleKey)) || { name: 'dashboard' },
+    },
   ],
 })
 
