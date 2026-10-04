@@ -46,6 +46,7 @@
           <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
+            <RouterLink class="link" :to="`/review/crosssection/${Number(row.id)}`">校核</RouterLink>
             <button
               v-for="action in actions"
               :key="action"

@@ -19,6 +19,9 @@ const Stationhouse = () => import('@/views/stationhouse/index.vue')
 const Calibration = () => import('@/views/calibration/index.vue')
 const Inspection = () => import('@/views/inspection/index.vue')
 const Plan = () => import('@/views/plan/index.vue')
+const RainfallReview = () => import('@/views/rainfall/review.vue')
+const RainfallReport = () => import('@/views/rainfall/report.vue')
+const GenericReview = () => import('@/views/review/index.vue')
 
 const router = createRouter({
   history: createWebHistory(),
@@ -28,6 +31,9 @@ const router = createRouter({
     { path: '/waterlevel', name: 'waterlevel', component: Waterlevel },
     { path: '/discharge', name: 'discharge', component: Discharge },
     { path: '/rainfall', name: 'rainfall', component: Rainfall },
+    { path: '/rainfall/report', name: 'rainfall-report', component: RainfallReport },
+    { path: '/rainfall/:id/review', name: 'rainfall-review', component: RainfallReview },
+    { path: '/review/:module/:id', name: 'generic-review', component: GenericReview },
     { path: '/waterquality', name: 'waterquality', component: Waterquality },
     { path: '/crosssection', name: 'crosssection', component: Crosssection },
     { path: '/telemetry', name: 'telemetry', component: Telemetry },

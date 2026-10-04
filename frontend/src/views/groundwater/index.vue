@@ -46,6 +46,7 @@
           <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
+            <RouterLink class="link" :to="`/review/groundwater/${Number(row.id)}`">复核</RouterLink>
             <button
               v-for="action in actions"
               :key="action"

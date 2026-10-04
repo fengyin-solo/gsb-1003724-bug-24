@@ -69,3 +69,23 @@ npm run build
   `frontend/src/data/seed.ts`。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
 - 想回到初始数据：清掉浏览器里 `hydrology-monitor-station:entries` 这一项，或调用 `resetModule(模块)`。
+
+## 雨量复核与整编链路
+
+- 雨量列表（`views/rainfall/index.vue`）点「复核」进入复核详情（`views/rainfall/review.vue`，
+  路由 `/rainfall/:id/review`）：详情展示只读原始观测值、自动核对「同站当日各时段雨量合计 vs
+  日累计雨量」，核对清单逐项勾选后只能落**一条**复核结论（通过 / 异常）。
+- 结论（`EntryRow.review`）与整编标记（`EntryRow.compiled`）直接随业务行整行持久化；
+  刷新页面、重新进入、返回列表都从同一份 `localStorage` 数据回显，原结论不丢、旧值不残留。
+- 旧版本数据缺少这些字段时，由 `local-store.ts` 的 `normalizeRow` 在读取时补缺省值
+  （`review=null`、`compiled=false`），**不改动任何原始观测字段**；字符串数字由
+  `parseAmount` 兼容解析。
+- 重复复核：内容完全相同走幂等不重复落库；内容不同则覆盖同一条结论并把 `revision+1`。
+  并发提交由每条记录一把提交锁（`inflight`）串行化，只有首个提交生效。
+- 打印报表（`views/rainfall/report.vue`，路由 `/rainfall/report`）与列表共用
+  `listEntries` 数据源和筛选条件，保证列表与报表一致；报表支持浏览器打印与 CSV 导出。
+- 整编待办（`views/compilation/index.vue`）通过 `pendingCompilationTodos()` 实时取
+  「复核通过且未整编」的雨量记录，核对整编清单全部勾选后 `markCompiled` 编入成果（幂等）。
+- 水位、流量、地下水、蒸发、泥沙、水质、断面模块复用通用复核详情
+  （`views/review/index.vue`，路由 `/review/:module/:id`）与共享核对清单组件
+  （`components/ReviewChecklist.vue`），清单内容在 `modules.ts` 的 `checklist` 配置。
